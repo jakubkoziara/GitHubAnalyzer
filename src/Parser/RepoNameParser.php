@@ -5,11 +5,22 @@ declare(strict_types=1);
 namespace App\Parser;
 
 
+use App\Model\RepoNameAndOwner;
+
 class RepoNameParser implements ParserInterface
 {
-    public function parseRepoNameOrLink(string $firstRepo, string $secondRepo): array
+    /**
+     * @var RepoNameAndOwner
+     */
+    private $repoNameAndOwner;
+
+    public function __construct(RepoNameAndOwner $repoNameAndOwner)
     {
-        //TODO: Make class for RepoOwnerAndName with getName() etc.
+        $this->repoNameAndOwner = $repoNameAndOwner;
+    }
+
+    public function parseRepoNameOrLink(string $firstRepo, string $secondRepo): RepoNameAndOwner
+    {
         $result = [];
 
         if ($this->isGitHubUrl($firstRepo)) {
@@ -24,7 +35,20 @@ class RepoNameParser implements ParserInterface
             $result['secondRepoOwnerAndName'] = $this->explodeBySlash($secondRepo);
         }
 
-        return $result;
+        $this->setNameAndOwner($result);
+
+        return $this->repoNameAndOwner;
+    }
+
+    private function setNameAndOwner(array $namesAndOwners): void
+    {
+        $this->repoNameAndOwner->setFirstRepoOwner($namesAndOwners['firstRepoOwnerAndName'][0]);
+
+        $this->repoNameAndOwner->setFirstRepoName($namesAndOwners['firstRepoOwnerAndName'][1]);
+
+        $this->repoNameAndOwner->setSecondRepoOwner($namesAndOwners['secondRepoOwnerAndName'][0]);
+
+        $this->repoNameAndOwner->setSecondRepoName($namesAndOwners['secondRepoOwnerAndName'][1]);
     }
 
     private function isGitHubUrl(string $text): bool

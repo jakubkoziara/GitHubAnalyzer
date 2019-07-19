@@ -31,7 +31,7 @@ class RepoNameAndOwner
         return $this->firstRepoOwner;
     }
 
-    public function setFirstRepoOwner(string$firstRepoOwner): void
+    public function setFirstRepoOwner(string $firstRepoOwner): void
     {
         $this->firstRepoOwner = $firstRepoOwner;
     }
@@ -41,7 +41,7 @@ class RepoNameAndOwner
         return $this->secondRepoName;
     }
 
-    public function setSecondRepoName(string$secondRepoName): void
+    public function setSecondRepoName(string $secondRepoName): void
     {
         $this->secondRepoName = $secondRepoName;
     }
@@ -51,7 +51,7 @@ class RepoNameAndOwner
         return $this->secondRepoOwner;
     }
 
-    public function setSecondRepoOwner(string$secondRepoOwner): void
+    public function setSecondRepoOwner(string $secondRepoOwner): void
     {
         $this->secondRepoOwner = $secondRepoOwner;
     }

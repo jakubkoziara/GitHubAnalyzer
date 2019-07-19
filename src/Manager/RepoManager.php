@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Manager;
 
 
+use App\Model\RepoNameAndOwner;
 use App\Parser\RepoNameParser;
 use Github\Client;
 use Github\ResultPager;
@@ -26,28 +27,29 @@ class RepoManager
         $this->client = $clientManager->getClient();
     }
 
-    public function getLastRelease($repoNameAndOwner): array
+    public function getLastRelease(RepoNameAndOwner $repoNameAndOwner): array
     {
-        return $this->client->api('repo')->releases()->latest('KnpLabs', 'php-github-api');
+        return $this->client->api('repo')->releases()->latest(
+            $repoNameAndOwner->getFirstRepoOwner(), $repoNameAndOwner->getFirstRepoName());
     }
 
-    public function getRepoDetails(): array
+    public function getRepoDetails(RepoNameAndOwner $repoNameAndOwner): array
     {
-        return $this->client->api('repo')->show('KnpLabs', 'php-github-api');
+        return $this->client->api('repo')->show($repoNameAndOwner->getFirstRepoOwner(), $repoNameAndOwner->getFirstRepoName());
     }
 
-    public function getPullRequests(): array
+    public function getPullRequests(RepoNameAndOwner $repoNameAndOwner, string $state = 'open'): array
     {
         $pullRequestApi = $this->client->api('pull_request');
 
         $paginator = new ResultPager($this->client);
 
-        $parameters = array('KnpLabs', 'php-github-api', array('state' => 'closed'));
+        $parameters = array($repoNameAndOwner->getFirstRepoOwner(), $repoNameAndOwner->getFirstRepoName(), array('state' => $state));
 
         return $paginator->fetchAll($pullRequestApi, 'all', $parameters);
     }
 
-    public function getRepoNameAndOwner(string $firstRepo, string $secondRepo): array
+    public function getRepoNameAndOwner(string $firstRepo, string $secondRepo): RepoNameAndOwner
     {
         return $this->parser->parseRepoNameOrLink($firstRepo, $secondRepo);
     }

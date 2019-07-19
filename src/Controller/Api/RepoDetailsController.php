@@ -43,21 +43,23 @@ class RepoDetailsController extends AbstractFOSRestController
      *
      * @SWG\Response(
      *     response="200",
-     *     description="Compare number of stars",
+     *     description="Compare repo details",
      *     )
      *
-     * @SWG\Tag(name="Starring")
+     * @SWG\Tag(name="Repo details")
      *
-     * @Route("/stars", methods={"GET"})
+     * @Route("/repo-details", methods={"GET"})
      * @param Request $request
      * @return Response
      */
 
-    public function compareStarsNumber(Request $request): Response
+    public function compareRepoDetails(Request $request): Response
     {
         $firstRepo = $request->query->get('firstRepo');
         $secondRepo = $request->query->get('secondRepo');
 
-        return $this->handleView($this->view($this->repoManager->getRepoDetails(), Response::HTTP_OK));
+        $repoNameAndOwner = $this->repoManager->getRepoNameAndOwner($firstRepo, $secondRepo);
+
+        return $this->handleView($this->view($this->repoManager->getRepoDetails($repoNameAndOwner), Response::HTTP_OK));
     }
 }

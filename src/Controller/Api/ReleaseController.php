@@ -60,6 +60,6 @@ class ReleaseController extends AbstractFOSRestController
 
         $repoNameAndOwner = $this->repoManager->getRepoNameAndOwner($firstRepo, $secondRepo);
 
-        return $this->handleView($this->view($this->repoManager->getLastRelease(), Response::HTTP_OK));
+        return $this->handleView($this->view($this->repoManager->getLastRelease($repoNameAndOwner), Response::HTTP_OK));
     }
 }
