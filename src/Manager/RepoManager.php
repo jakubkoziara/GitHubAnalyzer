@@ -52,15 +52,25 @@ class RepoManager
         return ['firstRepoData' => $firstRepoData, 'secondRepoData' => $secondRepoData];
     }
 
-    public function getPullRequests(RepoNameAndOwner $repoNameAndOwner, string $state = 'open'): array
+    public function getPullRequests(RepoNameAndOwner $repoNameAndOwner, string $state): array
     {
         $pullRequestApi = $this->client->api('pull_request');
 
         $paginator = new ResultPager($this->client);
 
-        $parameters = array($repoNameAndOwner->getFirstRepoOwner(), $repoNameAndOwner->getFirstRepoName(), array('state' => $state));
+        try {
+            $parameters = [$repoNameAndOwner->getFirstRepoOwner(), $repoNameAndOwner->getFirstRepoName(), ['state' => $state]];
 
-        return $paginator->fetchAll($pullRequestApi, 'all', $parameters);
+            $firstRepoData = $paginator->fetchAll($pullRequestApi, 'all', $parameters);
+
+            $parameters = [$repoNameAndOwner->getSecondRepoOwner(), $repoNameAndOwner->getSecondRepoName(), ['state' => $state]];
+
+            $secondRepoData = $paginator->fetchAll($pullRequestApi, 'all', $parameters);
+        } catch (\Exception $exception) {
+            throw RepositoryNotFoundException::notFound();
+        }
+
+        return ['firstRepoPullRequestsNumber' => count($firstRepoData), 'secondRepoPullRequestsNumber' => count($secondRepoData)];
     }
 
     public function getRepoNameAndOwner(string $firstRepo, string $secondRepo): RepoNameAndOwner

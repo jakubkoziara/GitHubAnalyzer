@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Controller\Api;
 
 use App\Manager\RepoManager;
+use App\Service\Compare\PullRequestsCompare;
 use FOS\RestBundle\Controller\AbstractFOSRestController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -20,10 +21,15 @@ class PullRequestController extends AbstractFOSRestController
      * @var RepoManager
      */
     private $repoManager;
+    /**
+     * @var PullRequestsCompare
+     */
+    private $pullRequestsCompare;
 
-    public function __construct(RepoManager $repoManager)
+    public function __construct(RepoManager $repoManager, PullRequestsCompare $pullRequestsCompare)
     {
         $this->repoManager = $repoManager;
+        $this->pullRequestsCompare = $pullRequestsCompare;
     }
 
     /**
@@ -58,21 +64,27 @@ class PullRequestController extends AbstractFOSRestController
      * @Route("/pull-requests", methods={"GET"})
      * @param Request $request
      * @return Response
+     * @throws \App\Exception\RepositoryNotFoundException
      */
 
     public function comparePullRequests(Request $request): Response
     {
         $firstRepo = $request->query->get('firstRepo');
         $secondRepo = $request->query->get('secondRepo');
+        $state = 'open';
 
-        if(!isset($firstRepo, $secondRepo) || empty($firstRepo) || empty($secondRepo)){
+        if (!isset($firstRepo, $secondRepo) || empty($firstRepo) || empty($secondRepo)) {
             return $this->handleView($this->view(null, Response::HTTP_NOT_FOUND));
         }
 
-        $state = $request->query->get('state');
+        if (null !== $request->query->get('state')) {
+            $state = $request->query->get('state');
+        }
 
         $repoNameAndOwner = $this->repoManager->getRepoNameAndOwner($firstRepo, $secondRepo);
 
-        return $this->handleView($this->view($this->repoManager->getPullRequests($repoNameAndOwner), Response::HTTP_OK));
+        $comparedPullRequests = $this->pullRequestsCompare->compare($this->repoManager->getPullRequests($repoNameAndOwner, $state));
+
+        return $this->handleView($this->view($comparedPullRequests, Response::HTTP_OK));
     }
 }
