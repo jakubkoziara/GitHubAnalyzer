@@ -58,6 +58,10 @@ class ReleaseController extends AbstractFOSRestController
         $firstRepo = $request->query->get('firstRepo');
         $secondRepo = $request->query->get('secondRepo');
 
+        if(!isset($firstRepo, $secondRepo) || empty($firstRepo) || empty($secondRepo)){
+            return $this->handleView($this->view(null, Response::HTTP_NOT_FOUND));
+        }
+
         $repoNameAndOwner = $this->repoManager->getRepoNameAndOwner($firstRepo, $secondRepo);
 
         return $this->handleView($this->view($this->repoManager->getLastRelease($repoNameAndOwner), Response::HTTP_OK));

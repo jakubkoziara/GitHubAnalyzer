@@ -64,6 +64,11 @@ class PullRequestController extends AbstractFOSRestController
     {
         $firstRepo = $request->query->get('firstRepo');
         $secondRepo = $request->query->get('secondRepo');
+
+        if(!isset($firstRepo, $secondRepo) || empty($firstRepo) || empty($secondRepo)){
+            return $this->handleView($this->view(null, Response::HTTP_NOT_FOUND));
+        }
+
         $state = $request->query->get('state');
 
         $repoNameAndOwner = $this->repoManager->getRepoNameAndOwner($firstRepo, $secondRepo);

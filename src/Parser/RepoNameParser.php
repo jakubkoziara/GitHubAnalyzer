@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Parser;
 
 
+use App\Exception\RepositoryValidNameException;
 use App\Model\RepoNameAndOwner;
 
 class RepoNameParser implements ParserInterface
@@ -22,20 +23,24 @@ class RepoNameParser implements ParserInterface
     public function parseRepoNameOrLink(string $firstRepo, string $secondRepo): RepoNameAndOwner
     {
         $result = [];
+        try {
+            if ($this->isGitHubUrl($firstRepo)) {
+                $result['firstRepoOwnerAndName'] = $this->extractOwnerAndName($firstRepo);
+            } else {
+                $result['firstRepoOwnerAndName'] = $this->explodeBySlash($firstRepo);
+            }
 
-        if ($this->isGitHubUrl($firstRepo)) {
-            $result['firstRepoOwnerAndName'] = $this->extractOwnerAndName($firstRepo);
-        } else {
-            $result['firstRepoOwnerAndName'] = $this->explodeBySlash($firstRepo);
+            if ($this->isGitHubUrl($secondRepo)) {
+                $result['secondRepoOwnerAndName'] = $this->extractOwnerAndName($secondRepo);
+            } else {
+                $result['secondRepoOwnerAndName'] = $this->explodeBySlash($secondRepo);
+            }
+
+            $this->setNameAndOwner($result);
+
+        } catch (\Exception $exception) {
+            throw RepositoryValidNameException::invalidFormat();
         }
-
-        if ($this->isGitHubUrl($secondRepo)) {
-            $result['secondRepoOwnerAndName'] = $this->extractOwnerAndName($secondRepo);
-        } else {
-            $result['secondRepoOwnerAndName'] = $this->explodeBySlash($secondRepo);
-        }
-
-        $this->setNameAndOwner($result);
 
         return $this->repoNameAndOwner;
     }
@@ -67,6 +72,6 @@ class RepoNameParser implements ParserInterface
 
     private function explodeBySlash(string $text): array
     {
-        return explode('/', $text);
+        return explode('/', $text, 2);
     }
 }

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Manager;
 
 
+use App\Exception\RepositoryNotFoundException;
 use App\Model\RepoNameAndOwner;
 use App\Parser\RepoNameParser;
 use Github\Client;
@@ -29,13 +30,26 @@ class RepoManager
 
     public function getLastRelease(RepoNameAndOwner $repoNameAndOwner): array
     {
-        return $this->client->api('repo')->releases()->latest(
-            $repoNameAndOwner->getFirstRepoOwner(), $repoNameAndOwner->getFirstRepoName());
+        try {
+            $firstRepoData = $this->client->api('repo')->releases()->latest($repoNameAndOwner->getFirstRepoOwner(), $repoNameAndOwner->getFirstRepoName());
+            $secondRepoData = $this->client->api('repo')->releases()->latest($repoNameAndOwner->getSecondRepoOwner(), $repoNameAndOwner->getSecondRepoName());
+        } catch (\Exception $exception) {
+            throw RepositoryNotFoundException::notFound();
+        }
+
+        return ['firstRepoData' => $firstRepoData, 'secondRepoData' => $secondRepoData];
     }
 
     public function getRepoDetails(RepoNameAndOwner $repoNameAndOwner): array
     {
-        return $this->client->api('repo')->show($repoNameAndOwner->getFirstRepoOwner(), $repoNameAndOwner->getFirstRepoName());
+        try {
+            $firstRepoData = $this->client->api('repo')->show($repoNameAndOwner->getFirstRepoOwner(), $repoNameAndOwner->getFirstRepoName());
+            $secondRepoData = $this->client->api('repo')->show($repoNameAndOwner->getSecondRepoOwner(), $repoNameAndOwner->getSecondRepoName());
+        } catch (\Exception $exception) {
+            throw RepositoryNotFoundException::notFound();
+        }
+
+        return ['firstRepoData' => $firstRepoData, 'secondRepoData' => $secondRepoData];
     }
 
     public function getPullRequests(RepoNameAndOwner $repoNameAndOwner, string $state = 'open'): array

@@ -31,3 +31,7 @@ services:
     App\Manager\ClientManager:
         arguments:
             $githubCredentials: '%env(GITHUB_SECRET)%'
+
+    App\EventListener\RepositoryExceptionListener:
+        tags:
+            - { name: kernel.event_listener, event: kernel.exception }
