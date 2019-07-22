@@ -16,4 +16,14 @@ class CompareHelper
     {
         return $firstNumber > $secondNumber;
     }
+
+    public function checkLastDate(\DateTime $firstDate, \DateTime $secondDate): bool
+    {
+        return $firstDate > $secondDate;
+    }
+
+    public function checkSameDate(\DateTime $firstDate, \DateTime $secondDate): bool
+    {
+        return $firstDate == $secondDate;
+    }
 }

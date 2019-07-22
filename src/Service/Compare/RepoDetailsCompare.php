@@ -79,7 +79,7 @@ class RepoDetailsCompare implements CompareInterface
     }
 
 
-    private function prepareData(array $repoData): RepoDetails
+    public function prepareData(array $repoData): RepoDetails
     {
         return new RepoDetails
         (

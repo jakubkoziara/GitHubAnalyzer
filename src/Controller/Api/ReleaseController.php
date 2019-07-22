@@ -4,6 +4,7 @@ namespace App\Controller\Api;
 
 
 use App\Manager\RepoManager;
+use App\Service\Compare\ReleasesCompare;
 use FOS\RestBundle\Controller\AbstractFOSRestController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -19,10 +20,15 @@ class ReleaseController extends AbstractFOSRestController
      * @var RepoManager
      */
     private $repoManager;
+    /**
+     * @var ReleasesCompare
+     */
+    private $releasesCompare;
 
-    public function __construct(RepoManager $repoManager)
+    public function __construct(RepoManager $repoManager, ReleasesCompare $releasesCompare)
     {
         $this->repoManager = $repoManager;
+        $this->releasesCompare = $releasesCompare;
     }
 
 
@@ -51,9 +57,10 @@ class ReleaseController extends AbstractFOSRestController
      * @Route("/releases", methods={"GET"})
      * @param Request $request
      * @return Response
+     * @throws \App\Exception\RepositoryNotFoundException
      */
 
-    public function compareReleases(Request $request): Response
+    public function compareLastReleases(Request $request): Response
     {
         $firstRepo = $request->query->get('firstRepo');
         $secondRepo = $request->query->get('secondRepo');
@@ -64,6 +71,8 @@ class ReleaseController extends AbstractFOSRestController
 
         $repoNameAndOwner = $this->repoManager->getRepoNameAndOwner($firstRepo, $secondRepo);
 
-        return $this->handleView($this->view($this->repoManager->getLastRelease($repoNameAndOwner), Response::HTTP_OK));
+        $comparedReleases = $this->releasesCompare->compare($this->repoManager->getLastRelease($repoNameAndOwner));
+
+        return $this->handleView($this->view($comparedReleases, Response::HTTP_OK));
     }
 }
